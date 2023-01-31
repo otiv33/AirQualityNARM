@@ -41,8 +41,13 @@ class Connection {
     }
   }
 
+  getTimestamp() {
+    var date = new Date(); 
+    return date.getFullYear() + "-"+ (date.getMonth()+1) + "-" + date.getDate() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+  }
+
   insertMeasurement(measurement){
-    let sql = `INSERT INTO measurements (pm1,pm25,pm4,pm10,h,t,voc,nox,dateTime) VALUES (?,?,?,?,?,?,?,?,DATETIME())`;
+    let sql = `INSERT INTO measurements (pm1,pm25,pm4,pm10,h,t,voc,nox,dateTime) VALUES (?,?,?,?,?,?,?,?,?)`;
     const values = [measurement['pm1'],
                     measurement['pm25'],
                     measurement['pm4'],
@@ -50,7 +55,8 @@ class Connection {
                     measurement['h'],
                     measurement['t'],
                     measurement['voc'],
-                    measurement['nox']]
+                    measurement['nox'],
+                    this.getTimestamp()]
     this.db.run(sql, values);
   }
 
