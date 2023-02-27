@@ -6,7 +6,7 @@
 
 SensirionI2CSen5x sen5x;
 HTTPClient http;
-const String reqUrl = "http://192.168.100.134:8080/airQuality/";
+const String reqUrl = "http://20.222.149.200:8080/airQuality/";
 const char* ssid = "NSM_Student";
 const char* wifiPassword = "Radstudiram!";
 const String apiToken = "sjurzbfg7qlopdz5";
