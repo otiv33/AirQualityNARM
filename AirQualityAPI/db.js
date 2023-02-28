@@ -1,8 +1,7 @@
 // SQLITE
 const sqlite3 = require('sqlite3').verbose();
 const { open } = require('sqlite');
-
-
+var dateFormat = require('dateformat');
 
 class Connection {
   db = null;
@@ -30,10 +29,6 @@ class Connection {
     try {
       let sql = `SELECT * FROM measurements`;
       const result = await this.db.all(sql)
-      // (err,rows) => {
-      //   if(err) return cb(err);
-      //     return rows;
-      // });
       // Sort by id DESC
       return result.sort((a, b) => b.id - a.id);
     } catch (error) {
@@ -42,11 +37,31 @@ class Connection {
   }
 
   getTimestamp() {
-    var date = new Date(); 
-    return date.getFullYear() + "-"+ (date.getMonth()+1) + "-" + date.getDate() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+    return dateFormat(new Date(), "yyyy-mm-dd hh:MM:ss");
   }
 
-  insertMeasurement(measurement){
+  insertArsoMeasurement(measurement){
+    let sql = `INSERT INTO measurements_ARSO (merilno_mesto,datum_od,datum_do,so2,co,o3,no2,pm10,pm25,benzen) VALUES (?,?,?,?,?,?,?,?,?,?)`;
+    const values = [measurement['merilno_mesto'],
+                    measurement['datum_od'],
+                    measurement['datum_do'],
+                    measurement['so2'],
+                    measurement['co'],
+                    measurement['o3'],
+                    measurement['no2'],
+                    measurement['pm10'],
+                    measurement['pm25'],
+                    measurement['benzen']]
+    // this.db.run(sql, values);
+    this.db.query(sql, values, function(err, result, fields) {
+      if (err) throw err;
+    
+      var id = result.insertId;
+      return id;
+    });
+  }
+
+  insertLocalMeasurement(measurement, arso_measurement_id){
     let sql = `INSERT INTO measurements (pm1,pm25,pm4,pm10,h,t,voc,nox,dateTime) VALUES (?,?,?,?,?,?,?,?,?)`;
     const values = [measurement['pm1'],
                     measurement['pm25'],
@@ -56,7 +71,8 @@ class Connection {
                     measurement['t'],
                     measurement['voc'],
                     measurement['nox'],
-                    this.getTimestamp()]
+                    this.getTimestamp(),
+                    arso_measurement_id]
     this.db.run(sql, values);
   }
 

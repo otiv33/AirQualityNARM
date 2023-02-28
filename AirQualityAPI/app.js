@@ -54,9 +54,6 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-const httpServer = http.createServer(app);
-const httpsServer = https.createServer(credentials, app);
-
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`);

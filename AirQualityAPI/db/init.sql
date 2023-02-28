@@ -8,5 +8,21 @@ CREATE TABLE IF NOT EXISTS measurements (
   t DECIMAL(6,2) DEFAULT 0,
   voc DECIMAL(6,2) DEFAULT 0,
   nox DECIMAL(6,2) DEFAULT 0,
-  dateTime DATETIME
+  dateTime DATETIME,
+  measurements_ARSO_id INTEGER,
+  FOREIGN KEY (measurements_ARSO_id) REFERENCES measurements_ARSO(id)
+);
+
+CREATE TABLE IF NOT EXISTS measurements_ARSO (
+  id INTEGER PRIMARY KEY,
+  merilno_mesto VARCHAR DEFAULT 0,
+  datum_od DATETIME,
+  datum_do DATETIME,
+  so2 DECIMAL(6,2) DEFAULT 0,
+  co DECIMAL(6,2) DEFAULT 0,
+  o3 DECIMAL(6,2) DEFAULT 0,
+  no2 DECIMAL(6,2) DEFAULT 0,
+  pm10 DECIMAL(6,2) DEFAULT 0,
+  pm25 DECIMAL(6,2) DEFAULT 0,
+  benzen DECIMAL(6,2) DEFAULT 0
 );
