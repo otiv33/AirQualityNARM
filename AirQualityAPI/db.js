@@ -1,7 +1,7 @@
 // SQLITE
 const sqlite3 = require('sqlite3').verbose();
 const { open } = require('sqlite');
-var dateFormat = require('dateformat');
+var dateFormat = require('date-format');
 
 class Connection {
   db = null;
@@ -37,31 +37,42 @@ class Connection {
   }
 
   getTimestamp() {
-    return dateFormat(new Date(), "yyyy-mm-dd hh:MM:ss");
+    return dateFormat.asString('yyyy-mm-dd hh:MM:ss', new Date());
   }
 
-  insertArsoMeasurement(measurement){
-    let sql = `INSERT INTO measurements_ARSO (merilno_mesto,datum_od,datum_do,so2,co,o3,no2,pm10,pm25,benzen) VALUES (?,?,?,?,?,?,?,?,?,?)`;
-    const values = [measurement['merilno_mesto'],
-                    measurement['datum_od'],
-                    measurement['datum_do'],
-                    measurement['so2'],
-                    measurement['co'],
-                    measurement['o3'],
-                    measurement['no2'],
-                    measurement['pm10'],
-                    measurement['pm25'],
-                    measurement['benzen']]
-    // this.db.run(sql, values);
-    this.db.query(sql, values, function(err, result, fields) {
-      if (err) throw err;
-    
-      var id = result.insertId;
-      return id;
-    });
+  insertArsoMeasurement(measurement, id){
+    try {
+      var benzen = measurement['benzen'];
+      try {
+        if(measurement['benzen'] == Object){
+          benzen = measurement['benzen'][0];
+        }
+      } catch (error) {
+        console.log(error);
+      }
+
+      let sql = `INSERT INTO measurements_ARSO (merilno_mesto,datum_od,datum_do,so2,co,o3,no2,pm10,pm25,benzen,measurements_id) VALUES (?,?,?,?,?,?,?,?,?,?,?)`;
+      const values = [measurement['merilno_mesto'],
+                      measurement['datum_od'],
+                      measurement['datum_do'],
+                      measurement['so2'],
+                      measurement['co'],
+                      measurement['o3'],
+                      measurement['no2'],
+                      measurement['pm10'],
+                      measurement['pm2.5'],
+                      benzen,
+                      id]
+      this.db.run(sql, values);
+    } catch (error) {
+      console.log(error);
+    }
+
   }
 
-  insertLocalMeasurement(measurement, arso_measurement_id){
+  // LOCAL MEASUREMENTS
+  insertLocalMeasurement(measurement){
+    const self = this;
     let sql = `INSERT INTO measurements (pm1,pm25,pm4,pm10,h,t,voc,nox,dateTime) VALUES (?,?,?,?,?,?,?,?,?)`;
     const values = [measurement['pm1'],
                     measurement['pm25'],
@@ -71,9 +82,13 @@ class Connection {
                     measurement['t'],
                     measurement['voc'],
                     measurement['nox'],
-                    this.getTimestamp(),
-                    arso_measurement_id]
-    this.db.run(sql, values);
+                    this.getTimestamp()]
+    var res = this.db.run(sql, values);
+    return new Promise(async (resolve, reject) => {
+      res.then(function(result){
+        resolve(result.lastID);
+      });
+    });
   }
 
   closeConnetion(){

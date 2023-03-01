@@ -7,10 +7,13 @@
 SensirionI2CSen5x sen5x;
 HTTPClient http;
 const String reqUrl = "http://20.222.149.200:8080/airQuality/";
+// const String reqUrl = "http://192.168.100.22:8080/airQuality/";
 const char* ssid = "NSM_Student";
 const char* wifiPassword = "Radstudiram!";
 const String apiToken = "sjurzbfg7qlopdz5";
-const int repeatInterval = 10000; // 10s
+const int repeatInterval = 600 * 1000; // 600s = 10min
+const int reconnectInterval = 15 * 1000; // 15s
+unsigned long previousMillis = 0;
 
 void setUpAirSensor(){
   Wire.begin();
@@ -37,16 +40,14 @@ void setUpAirSensor(){
   }
 }
 
-void printIP(){
-  Serial.print("Device IP: ");
-  Serial.println(WiFi.localIP());
-}
-
 void reconnectWifi(){
-  Serial.println("Reconnecting to WiFi...");
-  WiFi.disconnect();
-  WiFi.reconnect();
-  printIP();
+  unsigned long currentMillis = millis();
+  if ((WiFi.status() != WL_CONNECTED) && (currentMillis - previousMillis >= reconnectInterval)) {
+    Serial.println("Reconnecting to WiFi...");
+    WiFi.disconnect();
+    WiFi.reconnect();
+    previousMillis = currentMillis;
+  }
 }
 
 void setUpWifi(){
@@ -55,11 +56,12 @@ void setUpWifi(){
   Serial.println("\nConnecting");
   while(WiFi.status() != WL_CONNECTED){
     Serial.print(".");
-    delay(100);
+    delay(1000);
   }
   Serial.println("\nConnected to the WiFi network");
   Serial.print(ssid);
-  printIP();
+  Serial.print("Device IP: ");
+  Serial.println(WiFi.localIP());
 }
 
 void postAirQualityData(){
@@ -136,4 +138,5 @@ void setup() {
 void loop() {
   postAirQualityData();
   delay(repeatInterval);
+  Serial.println("[APP] Free memory: " + String(esp_get_free_heap_size()) + " bytes");
 }

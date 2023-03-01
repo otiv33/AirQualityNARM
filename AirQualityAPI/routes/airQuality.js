@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 const db = require('../db.js');
 let xmlParser = require('xml2json');
+const https = require('https');
 
 // GET air quality measurements
 router.get('/', async function(req, res) {
@@ -16,34 +17,48 @@ router.post('/', async function(req, res) {
   console.log('Received post req : '+JSON.stringify(local_measurement));
 
   // GET ARSO measurements
-  arso_data_xml = await get_arso_data();
-  arso_data_json = xmlParser.toJson(arso_data_xml);
-  arso_measurements = get_arso_data_MB(JSON.parse(arso_data_json));
+  try {
+    const id = await db.insertLocalMeasurement(local_measurement);
+    arso_data = await get_arso_data();
+    insert_arso_data_MB(arso_data, id);
+    res.json({ message: "Inserted measurement" });
+  } catch (error) {
+    console.log(error);
+  }
 
-  var arso_id = db.insertLocalMeasurement(arso_measurements);
-  db.insertLocalMeasurement(local_measurement, arso_id);
-  res.json({ message: "Inserted measurement" });
 });
 
 
-const https = require('https');
-function get_arso_data(){
-  return https.get('https://www.arso.gov.si/xml/zrak/ones_zrak_urni_podatki_zadnji.xml', (resp) => {
-    let data = '';
-    resp.on('data', (chunk) => {
-      data += chunk;
-    });
-    resp.on('end', () => {
-      return data;
-    });
 
-  }).on("error", (err) => {
-    console.log("Error: " + err.message);
+async function get_arso_data(){
+  return new Promise(async (resolve, reject) => {
+    var req = https.get('https://www.arso.gov.si/xml/zrak/ones_zrak_urni_podatki_zadnji.xml', (resp) => {
+      let arso_data_xml = '';
+      resp.on('data', (chunk) => {
+        arso_data_xml += chunk;
+      });
+      resp.on('end', () => {
+        arso_data_json = xmlParser.toJson(arso_data_xml);
+        arso_data = JSON.parse(arso_data_json)
+        resolve(arso_data);
+      });
+  
+    }).on("error", (err) => {
+      console.log("Error: " + err.message);
+    });
+    req.end();
   });
 }
 
-function get_arso_data_MB(arso_data){
-  
+function insert_arso_data_MB(arso_data, id){
+  var mbTitova = arso_data['arsopodatki']['postaja'][4];
+  if(mbTitova['merilno_mesto'] == 'MB Titova'){
+    db.insertArsoMeasurement(mbTitova, id);
+  }
+  var mbVrbanski = arso_data['arsopodatki']['postaja'][5];
+  if(mbVrbanski['merilno_mesto'] == 'MB Vrbanski'){
+    db.insertArsoMeasurement(mbVrbanski, id);
+  }
 }
 
 
