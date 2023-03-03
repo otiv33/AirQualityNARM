@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 const db = require('../db.js');
-let xmlParser = require('xml2json');
+let converter = require('xml-js');
 const https = require('https');
 
 // GET air quality measurements
@@ -38,8 +38,9 @@ async function get_arso_data(){
         arso_data_xml += chunk;
       });
       resp.on('end', () => {
-        arso_data_json = xmlParser.toJson(arso_data_xml);
-        arso_data = JSON.parse(arso_data_json)
+        var options = {ignoreComment: true, alwaysChildren: true};
+        arso_data_js = converter.xml2js(arso_data_xml, options);
+        arso_data = arso_data_js.elements[0]
         resolve(arso_data);
       });
   
@@ -51,11 +52,11 @@ async function get_arso_data(){
 }
 
 function insert_arso_data_MB(arso_data, id){
-  var mbTitova = arso_data['arsopodatki']['postaja'][4];
+  // var mbTitova = arso_data['arsopodatki']['postaja'][4];
   if(mbTitova['merilno_mesto'] == 'MB Titova'){
     db.insertArsoMeasurement(mbTitova, id);
   }
-  var mbVrbanski = arso_data['arsopodatki']['postaja'][5];
+  // var mbVrbanski = arso_data['arsopodatki']['postaja'][5];
   if(mbVrbanski['merilno_mesto'] == 'MB Vrbanski'){
     db.insertArsoMeasurement(mbVrbanski, id);
   }
