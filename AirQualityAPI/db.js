@@ -27,7 +27,8 @@ class Connection {
 
   async getMeasurements() {
     try {
-      let sql = `SELECT * FROM measurements`;
+      // let sql = `SELECT * FROM measurements`;
+      let sql = `SELECT m.*, ma.* FROM measurements AS m INNER JOIN measurements_ARSO AS ma ON m.id = ma.measurements_id`;
       const result = await this.db.all(sql)
       // Sort by id DESC
       return result.sort((a, b) => b.id - a.id);
