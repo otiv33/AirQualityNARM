@@ -38,9 +38,9 @@ async function get_arso_data(){
         arso_data_xml += chunk;
       });
       resp.on('end', () => {
-        var options = {ignoreComment: true, alwaysChildren: true};
+        var options = {ignoreComment: true, alwaysChildren: false, compact: true};
         arso_data_js = converter.xml2js(arso_data_xml, options);
-        arso_data = arso_data_js.elements[0]
+        arso_data = arso_data_js['arsopodatki']['postaja'];
         resolve(arso_data);
       });
   
@@ -52,15 +52,34 @@ async function get_arso_data(){
 }
 
 function insert_arso_data_MB(arso_data, id){
-  // var mbTitova = arso_data['arsopodatki']['postaja'][4];
-  if(mbTitova['merilno_mesto'] == 'MB Titova'){
-    db.insertArsoMeasurement(mbTitova, id);
+  var mb_titova = arso_data[4];
+  if(mb_titova['merilno_mesto']['_text'] == 'MB Titova'){
+    mb_titova_dict = arso_data_to_dict(mb_titova);
+    db.insertArsoMeasurement(mb_titova_dict, id);
   }
-  // var mbVrbanski = arso_data['arsopodatki']['postaja'][5];
-  if(mbVrbanski['merilno_mesto'] == 'MB Vrbanski'){
-    db.insertArsoMeasurement(mbVrbanski, id);
+  var mb_vrbanski = arso_data[5];
+  if(mb_vrbanski['merilno_mesto']['_text'] == 'MB Vrbanski'){
+    mb_vrbanski_dict = arso_data_to_dict(mb_vrbanski);
+    db.insertArsoMeasurement(mb_vrbanski_dict, id);
   }
 }
+
+function arso_data_to_dict(arso_data){
+  const arso_dict = {
+    merilno_mesto : arso_data?.['merilno_mesto']?.['_text'],
+    datum_od : arso_data?.['datum_od']?.['_text'],
+    datum_do : arso_data?.['datum_do']?.['_text'],
+    so2 : arso_data?.['so2']?.['_text'],
+    co : arso_data?.['co']?.['_text'],
+    o3 : arso_data?.['o3']?.['_text'],
+    no2 : arso_data?.['no2']?.['_text'],
+    pm10 : arso_data?.['pm10']?.['_text'],
+    pm25 : arso_data?.['pm2.5']?.['_text'],
+    benzen : arso_data?.['benzen']?.['_text'],
+  }
+  return arso_dict;
+}
+
 
 
 module.exports = router;

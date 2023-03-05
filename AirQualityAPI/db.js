@@ -42,15 +42,6 @@ class Connection {
 
   insertArsoMeasurement(measurement, id){
     try {
-      var benzen = measurement['benzen'];
-      try {
-        if(measurement['benzen'] == Object){
-          benzen = measurement['benzen'][0];
-        }
-      } catch (error) {
-        console.log(error);
-      }
-
       let sql = `INSERT INTO measurements_ARSO (merilno_mesto,datum_od,datum_do,so2,co,o3,no2,pm10,pm25,benzen,measurements_id) VALUES (?,?,?,?,?,?,?,?,?,?,?)`;
       const values = [measurement['merilno_mesto'],
                       measurement['datum_od'],
@@ -61,7 +52,7 @@ class Connection {
                       measurement['no2'],
                       measurement['pm10'],
                       measurement['pm2.5'],
-                      benzen,
+                      measurement['benzen'],
                       id]
       this.db.run(sql, values);
     } catch (error) {
