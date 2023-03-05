@@ -31,15 +31,15 @@ class Connection {
       let sql = `SELECT * FROM measurements;`;
       var mesaurements = await this.db.all(sql)
       // Sort by id DESC
-      measurements = mesaurements.sort((a, b) => b.id - a.id);
+      var measurements_s = mesaurements.sort((a, b) => b.id - a.id);
 
-      for (const m of measurements) {
+      for (const m of measurements_s) {
         sql = `SELECT * FROM measurements_ARSO WHERE measurements_id =  ?;`;
         var mesaurements_ARSO = await this.db.all(sql, m.id)
         m['arso_data'] = mesaurements_ARSO;
       }
 
-      return measurements;
+      return measurements_s;
     } catch (error) {
       console.log(error);
     }
