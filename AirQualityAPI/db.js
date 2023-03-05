@@ -27,11 +27,19 @@ class Connection {
 
   async getMeasurements() {
     try {
-      // let sql = `SELECT * FROM measurements`;
-      let sql = `SELECT m.*, ma.* FROM measurements AS m INNER JOIN measurements_ARSO AS ma ON m.id = ma.measurements_id`;
-      const result = await this.db.all(sql)
+      // Get measurements
+      let sql = `SELECT * FROM measurements;`;
+      var mesaurements = await this.db.all(sql)
       // Sort by id DESC
-      return result.sort((a, b) => b.id - a.id);
+      measurements = mesaurements.sort((a, b) => b.id - a.id);
+
+      for (const m of measurements) {
+        sql = `SELECT * FROM measurements_ARSO WHERE measurements_id =  ?;`;
+        var mesaurements_ARSO = await this.db.all(sql, m.id)
+        m['arso_data'] = mesaurements_ARSO;
+      }
+
+      return measurements;
     } catch (error) {
       console.log(error);
     }
