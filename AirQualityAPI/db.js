@@ -46,7 +46,7 @@ class Connection {
   }
 
   getTimestamp() {
-    return dateFormat.asString('yyyy-mm-dd hh:MM:ss', new Date());
+    return dateFormat.asString('yyyy-MM-dd hh:mm:ss', new Date());
   }
 
   insertArsoMeasurement(measurement, id){
