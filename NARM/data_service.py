@@ -4,9 +4,11 @@ import json
 import pandas as pd
 import pickle
 from datetime import datetime
+from algorithms import algorithms
 
 class data_service:
     data = pd.DataFrame()
+    algorithms = algorithms(data)
     
     def __init__(self, load_fresh_data: bool = True):
         self.data = self._get_data(load_fresh_data)
@@ -42,9 +44,9 @@ class data_service:
     
     
     # 2. - Structure data
-    def structure_data(self, data) -> pd.DataFrame:
+    def structure_data(self) -> pd.DataFrame:
         clean_data = []
-        for d in data:
+        for d in self.data:
             if(d['pm1'] is None):
                 continue
             j_data = {
@@ -92,7 +94,10 @@ class data_service:
             if(j_data[property_name] is not None):
                 if(new_data[property_name] is not None):
                     n1 = float(j_data[property_name])
-                    n2 = float(new_data[property_name])
+                    if(new_data[property_name] != '<2'):
+                        n2 = float(new_data[property_name])
+                    else:
+                        n2 = 1
                     j_data[property_name] = (n1 + n2) / 2
             else:
                 j_data[property_name] = new_data[property_name]
@@ -132,3 +137,8 @@ class data_service:
     def save_data(self):
         self.data.to_csv('data/data.csv', index=False)
         print("[OK] - Data saved to file")
+        
+        
+    # 7. - Update algorithms data
+    def refresh_algorithms_data(self):
+        self.algorithms.data = self.data
