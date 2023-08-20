@@ -9,14 +9,18 @@ if __name__ == '__main__':
     ds.clean_data_zero() # Option 1
     # ds.clean_data_mean() # Option 2
     ds.check_for_na_values()
-    ds.save_data()
-    ds.refresh_algorithms_data()
+    ds.data = ds.data.drop('id', axis=1)
+    ds.save_clean_data_to_CSV()
+    ds.update_algorithms_data()
+    
+    ds.categorize_data()
     
     # support : (št vrstic A)/(št vrstic)
     # confidence : (št vrstic z A in B)/(št vrstic A)
     # lift : (Confidence(A->B))/(support(B))
-    # ds.algorithms.apriori(min_support=0.1, min_confidence=0.1, min_lift=1, max_length=4)
     
-    ds.algorithms.eclat(0.08, 1, 3)
-
+    ds.algorithms.apriori_new(min_support=0.5, min_lift=1)
     
+    ds.algorithms.eclat_new(min_support=0.5, min_combination=1, max_combination=11, min_lift=1)
+    
+    ds.algorithms.fp_growth(min_support=0.5, min_lift=1)

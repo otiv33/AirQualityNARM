@@ -12,6 +12,7 @@ class data_service:
     
     def __init__(self, load_fresh_data: bool = True):
         self.data = self._get_data(load_fresh_data)
+        self.algorithms.data = self.data
     
     # 1. - Get data
     def _air_quality_data_request(self) -> dict:
@@ -36,8 +37,8 @@ class data_service:
         # Save data to file
         with open('data/data.pickle', 'wb') as f:
             pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
-        with open('data/data.json', 'w') as f:
-            json.dump(data, f)
+        # with open('data/data.json', 'w') as f:
+        #     json.dump(data, f)
         elapsed_time = time.time() - start_time
         print(f'Time elapsed for aquiring data: {elapsed_time}s')
         return data
@@ -74,41 +75,37 @@ class data_service:
                 j_data['o3'] = ad1['o3']
                 j_data['no2'] = ad1['no2']
                 j_data['benzen'] = ad1['benzen']
-                self._merge_data(j_data, ad1, 'pm10')
-                self._merge_data(j_data, ad1, 'pm25')
+                j_data['pm10'] = self._merge_data(j_data['pm10'], ad1['pm10'])
+                j_data['pm25'] = self._merge_data(j_data['pm25'], ad1['pm25'])
 
                 # MB Vrbanski
                 ad2 = d['arso_data'][1]
-                self._merge_data(j_data, ad2, 'o3')
-                self._merge_data(j_data, ad2, 'no2')
-                self._merge_data(j_data, ad2, 'benzen')
-                self._merge_data(j_data, ad2, 'pm10')
-                self._merge_data(j_data, ad2, 'pm25')
+                j_data['o3'] = self._merge_data(j_data['o3'], ad2['o3'])
+                j_data['no2'] = self._merge_data(j_data['no2'], ad2['no2'])
+                j_data['benzen'] = self._merge_data(j_data['benzen'], ad2['benzen'])
+                j_data['pm10'] = self._merge_data(j_data['pm10'], ad2['pm10'])
+                j_data['pm25'] = self._merge_data(j_data['pm25'], ad2['pm25'])
             
             clean_data.append(j_data)
         
         self.data = pd.DataFrame(clean_data)
     
-    def _merge_data(self, j_data: dict, new_data: dict, property_name: str):
+    def _merge_data(self, data, new_data):
         try:
-            if(j_data[property_name] is not None):
-                if(new_data[property_name] is not None):
-                    n1 = float(j_data[property_name])
-                    if(new_data[property_name] != '<2'):
-                        n2 = float(new_data[property_name])
-                    else:
-                        n2 = 1
-                    j_data[property_name] = (n1 + n2) / 2
+            if(data is not None):
+                if(new_data is not None):
+                    n1 = float(data) if not isinstance(data, str) else 1.0 
+                    n2 = float(new_data) if not isinstance(new_data, str) else 1.0
+                    return (n1 + n2) / 2
             else:
-                j_data[property_name] = new_data[property_name]
+                return float(new_data) if not isinstance(new_data, str) else 1.0
         except Exception as e:
-            pass
+            return None
     
     
     # 3. - Calibrate temperature for housing -3 C
     def calibrate_temperature(self):
-        self.data['t'] = self.data['t'].sub(3)
-        
+        self.data['t'] = self.data['t'].sub(3)    
         
     # 4. - Clean data - option 1 & 2
     def clean_data_zero(self):
@@ -125,7 +122,6 @@ class data_service:
             avg_val = self.data['benzen'].mean()
             self.data['benzen'].fillna(avg_val, inplace=True)
     
-    
     # 5. - Check for NA values    
     def check_for_na_values(self):
         if not self.data.isna().values.any() and not self.data.isnull().values.any():
@@ -134,11 +130,87 @@ class data_service:
             print("[WARNING] - More cleaning is needed")
             
     # 6. - Save data to file
-    def save_data(self):
-        self.data.to_csv('data/data.csv', index=False)
-        print("[OK] - Data saved to file")
-        
-        
+    def save_clean_data_to_CSV(self):
+        self.data.to_csv('data/cleaned-data.csv', index=False)
+        print("[OK] - Data saved to data/cleaned-data.csv")
+         
     # 7. - Update algorithms data
-    def refresh_algorithms_data(self):
+    def update_algorithms_data(self):
         self.algorithms.data = self.data
+        
+    #8. - Categorize data
+    def categorize_data(self):       
+        self.data['pm1'] = pd.cut(
+                self.data['pm1'],
+                include_lowest=True,
+                bins=[0,10,20,25,50,75,1000],
+                labels= ['pm1-Zelo dobra','pm1-Dobra','pm1-Sprejemljiva','pm1-Slaba','pm1-Zelo slaba','pm1-Izredno slaba']
+            )
+        self.data['pm25'] = pd.cut(
+                self.data['pm25'],
+                include_lowest=True,
+                bins=[0,10,20,25,50,75,1000],
+                labels= ['pm25-Zelo dobra','pm25-Dobra','pm25-Sprejemljiva','pm25-Slaba','pm25-Zelo slaba','pm25-Izredno slaba']
+            )
+        self.data['pm4'] = pd.cut(
+                self.data['pm4'],
+                include_lowest=True,
+                bins=[0,20,40,50,100,150,1200],
+                labels= ['pm4-Zelo dobra','pm4-Dobra','pm4-Sprejemljiva','pm4-Slaba','pm4-Zelo slaba','pm4-Izredno slaba']
+            )
+        self.data['pm10'] = pd.cut(
+                self.data['pm10'],
+                include_lowest=True,
+                bins=[0,20,40,50,100,150,1200],
+                labels= ['pm10-Zelo dobra','pm10-Dobra','pm10-Sprejemljiva','pm10-Slaba','pm10-Zelo slaba','pm10-Izredno slaba']
+            )
+        self.data['h'] = pd.cut(
+            self.data['h'],
+            include_lowest=True,
+            bins=[0,20,40,60,80,100],
+            labels= ['h-Zelo nizka','h-Nizka','h-Srednja','h-Visoka','h-Zelo visoka']
+        )
+        self.data['t'] = pd.cut(
+            self.data['t'],
+            include_lowest=True,
+            bins=[-15,0,10,20,30,40,50],
+            labels= ['t-Zelo hladno','t-Hladno','t-Srednje','t-Toplo','t-Vroče','t-Zelo vroče']
+        )
+        self.data['voc'] = pd.cut(
+            self.data['voc'],
+            include_lowest=True,
+            bins=[0,100,200,300,400,500], # Index points
+            labels= ['h-Zelo nizka','h-Nizka','h-Srednja','h-Visoka','h-Zelo visoka']
+        )
+        self.data['nox'] = pd.cut(
+            self.data['nox'],
+            include_lowest=True,
+            bins=[0,100,200,300,400,500], # Index points
+            labels= ['nox-Zelo nizka','nox-Nizka','nox-Srednja','nox-Visoka','nox-Zelo visoka']
+        )
+        self.data['o3'] = pd.cut(
+            self.data['o3'],
+            include_lowest=True,
+            bins=[0,50,100,130,240,380,10000], # http://rte.arso.gov.si/zrak/kakovost%20zraka/podatki/ozon.html
+            labels= ['o3-Zelo dobra','o3-Dobra','o3-Sprejemljiva','o3-Slaba','o3-Zelo slaba','o3-Izredno slaba']
+        )
+        self.data['no2'] = pd.cut(
+            self.data['no2'],
+            include_lowest=True,
+            bins=[0,40,90,120,230,340,1000], # https://www.arso.gov.si/zrak/kakovost%20zraka/podatki/amp/razlaga_pojmov.html
+            labels= ['no2-Zelo dobra','no2-Dobra','no2-Sprejemljiva','no2-Slaba','no2-Zelo slaba','no2-Izredno slaba']
+        )
+        self.data['benzen'] = pd.cut(
+            self.data['benzen'],
+            include_lowest=True,
+            bins=[0,5,380],
+            labels= ['benzen-Dobro','benzen-Slabo']
+        )
+        hours = self.data['dateTime'].dt.hour
+        self.data['dateTime'] = pd.cut(
+            hours,
+            include_lowest=True,
+            bins=[0,6,12,18,24],
+            labels= ['dateTime-Noč', 'dateTime-Dopoldne','dateTime-Popoldne','dateTime-Večer']
+        )
+    
