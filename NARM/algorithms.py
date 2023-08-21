@@ -1,70 +1,45 @@
+import time
+import psutil
 import pandas as pd
 from mlxtend.frequent_patterns import apriori, fpgrowth, association_rules
 from mlxtend.preprocessing import TransactionEncoder
 from pyECLAT import ECLAT
+from visualization import items_total_plot, parallel_category_plot, heatmap_plot, scatterplot, \
+    parallel_rule_existence_plot,frequent_itemset_plot,parallel_category_plot_nia, \
+    heatmap_plot_nia, parallel_rule_existence_plot_nia
+
+from niaarm import Dataset, get_rules
+from niapy.algorithms.basic import DifferentialEvolution, BatAlgorithm, BeesAlgorithm
+from niaarm.visualize import hill_slopes
 
 class algorithms:
     
     def __init__(self, data) -> None:
         self.data = data
     
-    def get_mlx_encoded_data(self):
+    def get_onehot_encoded_data(self):
         attrCount = len(self.data.count()) - 1
         fp_data = self.data.astype(str).values[:, :attrCount].tolist()
         my_transactionencoder = TransactionEncoder()
         my_transactionencoder.fit(fp_data)
+        # One-hot encode
         encoded_transactions = my_transactionencoder.transform(fp_data)
         encoded_transactions_df = pd.DataFrame(encoded_transactions, columns=my_transactionencoder.columns_)
         return encoded_transactions_df
-       
-    # https://www.geeksforgeeks.org/implementing-apriori-algorithm-in-python/
-    def apriori_new(
-        self,
-        min_support:float,
-        min_lift:float,
-    ):
-        print("\nRunning apriori algorithm...")
-        
-        # Encode data
-        encoded_data = self.get_mlx_encoded_data()
-        
-        # Run apriori   
-        frequent_itemset = apriori(encoded_data, min_support = min_support, use_colnames = True)
-        frequent_itemset = frequent_itemset.sort_values(by=['support'], ascending=False)
-        frequent_itemset.to_csv('data/result_apriori_new_frequent_itemset.csv')
     
-        # Get association rules
-        rules = association_rules(frequent_itemset, metric ="lift", min_threshold = min_lift)
-        rules = rules.sort_values(['confidence', 'lift'], ascending =[False, False])
-        rules.to_csv('data/result_apriori_new_association_rules.csv')
-        
-        print('Apriori new algorithm finished.\n')    
+    def sort_and_clean_arules(self, arules):
+        arules = arules.sort_values(['confidence', 'lift'], ascending =[False, False])
+        arules['antecedents'] = arules['antecedents'].apply(lambda a: list(a))
+        arules['consequents'] = arules['consequents'].apply(lambda a: list(a))
+        return arules
     
-    def eclat_new(
-        self,
-        min_support: float = 0.08,
-        min_combination: float = 1,
-        max_combination: float = 3,
-        min_lift:float = 1
-    ):       
-        print("Running eclat algorithm...")
-        eclat_instance = None
-         
-        # Encode data       
-        attrCount = len(self.data.count())
-        i = 0
-        for col in self.data.columns[:attrCount].tolist():
-            self.data.rename(columns={col : i}, inplace=True)
-            i += 1
-        
-        # Run eclat
-        eclat_instance = ECLAT(self.data, verbose=False)
-        get_ECLAT_indexes, get_ECLAT_supports = eclat_instance.fit(min_support=min_support,
-                                                           min_combination=min_combination,
-                                                           max_combination=max_combination,
-                                                           separator=' & ',
-                                                           verbose=False)
-
+    def sort_and_clean_frequent_itemset(self, frequent_itemset):
+        frequent_itemset = frequent_itemset.sort_values(by=['support','itemsets'], ascending=False)
+        frequent_itemset['itemsets'] = frequent_itemset['itemsets'].apply(lambda a: list(a))
+        return frequent_itemset
+    
+    # pyECLAT and mlextend association rules fix https://github.com/rasbt/mlxtend/discussions/959
+    def eclat_supports_to_df(self, get_ECLAT_supports):
         frequent_itemset = pd.DataFrame(get_ECLAT_supports.items(),columns=['itemsets','support'])
         frequent_itemset = frequent_itemset[['support','itemsets']]
         new_column = []
@@ -73,139 +48,213 @@ class algorithms:
             r = tuple(i.strip() for i in r)
             new_column.append(r)
         frequent_itemset['itemsets'] = pd.Series(new_column)
+        return frequent_itemset
+       
+    def eclat_encode_data(self):
+        enc_data = self.data.copy(deep=True)
+        attrCount = len(enc_data.count())
+        i = 0
+        for col in enc_data.columns[:attrCount].tolist():
+            enc_data.rename(columns={col : i}, inplace=True)
+            i += 1
+
+        return enc_data
+            
+    # https://www.geeksforgeeks.org/implementing-apriori-algorithm-in-python/
+    def apriori(
+        self,
+        min_support:float,
+        min_lift:float,
+        show_plots: bool = True,
+        save_results: bool = True
+    ):
+        print("Running apriori algorithm...")
+        start = time.time()
         
-        frequent_itemset = frequent_itemset.sort_values(by=['support'], ascending=False)
-        frequent_itemset.to_csv('data/result_eclat_new_frequent_itemsets.csv')
+        # Encode data
+        encoded_data = self.get_onehot_encoded_data()
+        
+        # Run apriori   
+        frequent_itemset = apriori(encoded_data, min_support = min_support, use_colnames = True)
+        frequent_itemset = self.sort_and_clean_frequent_itemset(frequent_itemset)
+    
+        # Get association rules 
+        arules = association_rules(frequent_itemset, metric="lift", min_threshold = min_lift)
+        arules = self.sort_and_clean_arules(arules)
+        
+        end = time.time() - start
+        print(f"Duration for apriori: {end}")
+        print(f"Memory used for apriori: {psutil.Process().memory_info().rss / 1024 ** 2} MB")
+        
+        # Save results
+        if(save_results):
+            frequent_itemset.to_csv('data/result_apriori_frequent_itemset.csv')
+            arules.to_csv('data/result_apriori_association_rules.csv')    
+        
+        # Show plots
+        if show_plots:
+            # frequent_itemset_plot(frequent_itemset)
+            # items_total_plot(encoded_data)
+            parallel_category_plot(arules)
+            # heatmap_plot(arules)
+            # scatterplot(arules)
+            # parallel_rule_existence_plot(arules)
+        print("Done")
+        
+    def eclat(
+        self,
+        min_support: float = 0.08,
+        min_combination: float = 1,
+        max_combination: float = 3,
+        min_lift:float = 1,
+        show_plots: bool = True,
+        save_results: bool = True
+    ):       
+        print("Running eclat algorithm...")
+        start = time.time()
+            
+        # Encode data       
+        encoded_data = self.eclat_encode_data()
+        
+        # Run eclat
+        eclat_instance = ECLAT(encoded_data, verbose=True)
+        get_ECLAT_indexes, get_ECLAT_supports = eclat_instance.fit(min_support=min_support,
+                                                            min_combination=min_combination,
+                                                            max_combination=max_combination,
+                                                            separator=' & ',
+                                                            verbose=True)
+        
+        # Encode for use in association rules
+        frequent_itemset = self.eclat_supports_to_df(get_ECLAT_supports)        
+        frequent_itemset = frequent_itemset.sort_values(by=['support','itemsets'], ascending=False)
+        
 
         # Get association rules
-        rules = association_rules(frequent_itemset, metric ="lift", min_threshold = min_lift)
-        rules = rules.sort_values(['confidence', 'lift'], ascending =[False, False])
-        rules.to_csv('data/result_eclat_new_association_rules.csv')
+        arules = association_rules(frequent_itemset, metric ="lift", min_threshold = min_lift)
+        arules = self.sort_and_clean_arules(arules)
         
-        print('Eclat new algorithm finished.\n')    
+        end = time.time() - start
+        print(f"Duration for eclat: {end}")
+        print(f"Memory used for eclat: {psutil.Process().memory_info().rss / 1024 ** 2} MB")
         
-           
-    # copied from https://towardsdatascience.com/the-fp-growth-algorithm-1ffa20e839b8
+        # Save results
+        if save_results:
+            # TIDset
+            tidSet = pd.DataFrame(get_ECLAT_indexes.items(), columns=['Item', 'Indices'])
+        
+            frequent_itemset.to_csv('data/result_eclat_frequent_itemsets.csv')
+            arules.to_csv('data/result_eclat_association_rules.csv')
+            tidSet.to_csv('data/result_eclat_TIDset.csv',sep='\t')
+        
+        # Show plots
+        if show_plots:
+            items_total_plot(encoded_data)
+            parallel_category_plot(arules)
+            heatmap_plot(arules)
+            scatterplot(arules)
+            parallel_rule_existence_plot(arules)
+
+
+    # https://towardsdatascience.com/the-fp-growth-algorithm-1ffa20e839b8
     def fp_growth(
         self, 
         min_support: float = 0.08,
-        min_lift: float = 1
+        min_lift: float = 1,
+        show_plots: bool = True,
+        save_results: bool = True
     ):      
         print("Running fp-growth algorithm...")
+        start = time.time()
         
         # Encode data
-        encoded_data = self.get_mlx_encoded_data()
+        encoded_data = self.get_onehot_encoded_data()
 
         # Run fp-growth
         frequent_itemset = fpgrowth(encoded_data, min_support=min_support, use_colnames = True)
-        frequent_itemset = frequent_itemset.sort_values(by=['support'], ascending=False)
-        frequent_itemset.to_csv('data/result_fp_growth_frequent_itemset.csv')
+        frequent_itemset = self.sort_and_clean_frequent_itemset(frequent_itemset)
 
-        # Get asspciation rules
-        rules = association_rules(frequent_itemset, metric="lift", min_threshold=min_lift)
-        rules = rules.sort_values(['confidence', 'lift'], ascending =[False, False])
-        rules.to_csv('data/result_fp_growth_association_rules.csv')
+        # Get association rules
+        arules = association_rules(frequent_itemset, metric="lift", min_threshold=min_lift)
+        arules = self.sort_and_clean_arules(arules)
+        
+        end = time.time() - start
+        print(f"Duration for fpgrowth: {end}")
+        print(f"Memory used for fpgrowth: {psutil.Process().memory_info().rss / 1024 ** 2} MB")
+        
+        # Save results
+        if(save_results):
+            frequent_itemset.to_csv('data/result_fp_growth_frequent_itemset.csv')
+            arules.to_csv('data/result_fp_growth_association_rules.csv')
 
-        print("Fp-growth algorithm finished.\n")
+        # Show plots
+        if show_plots:
+            items_total_plot(encoded_data)
+            parallel_category_plot(arules)
+            heatmap_plot(arules)
+            scatterplot(arules)
+            parallel_rule_existence_plot(arules)
+
+
+    # Mulitple filters
+    # filtered_rules = arules[(arules['antecedent support'] > 0.002) &
+    #                (arules['consequent support'] > 0.01) &
+    #                (arules['confidence'] > 0.60) &
+    #                (arules['lift'] > 2.50)]
+
+    # NARM****************************************************************************************   
+    def filter_min_threshold(self, rules, min_support, min_lift):
+        del_rules = []
+        for r in rules:
+            if(r.support < min_support or r.lift < min_lift):
+                del_rules.append(r)
+        for r in del_rules:
+            rules.remove(r)
+        return rules
     
-    def nia_alogrithm(self):
+    def niaarm_1(
+        self,
+        min_support: float = 0.5,
+        min_lift: float = 1
+    ):
+        # Load data
+        dataset = Dataset(self.data)
+        
+        # Set algorithm and metrics
+        # algorithm = DifferentialEvolution(population_size=50, differential_weight=0.5, crossover_probability=0.9)
+        algorithm = BatAlgorithm()
+        metrics = ('support', 'confidence')
+        
+        # Get association rules
+        rules, run_time = get_rules(dataset, algorithm, metrics, max_iters=30, logging=True)
+        print(f'Run Time: {run_time}')
+        
+        # Filter rules with min_support and min_lift
+        rules = self.filter_min_threshold(rules, min_support, min_lift)
+        
+        rules.sort(by='support',reverse=True)
+        
+        rules.to_csv('data/result_niaarm1_association_rules.csv')
+        
+        arules = pd.read_csv('data/result_niaarm1_association_rules.csv')
+        
+        import re
+        arules['antecedent'] = arules['antecedent'].apply(lambda a: re.sub(r'[.][0-9]+', '', a))
+        arules['consequent'] = arules['consequent'].apply(lambda a: re.sub(r'[.][0-9]+', '', a))
+
+        
+        # Show plots
+        if True:
+            # items_total_plot(encoded_data)
+            parallel_category_plot_nia(arules)
+            heatmap_plot_nia(arules)
+            scatterplot(arules)
+            parallel_rule_existence_plot_nia(arules)
+        # first_rule = rules[0]
+        # hill_slopes(first_rule, dataset.transactions)
+        # plt.show()
+    
+    def niaarm_2(self):
         pass
     
-    
-    # # APRIORI        
-    # def apriori(
-    #     self, 
-    #     min_support: float,
-    #     min_confidence: float,
-    #     min_lift: float,
-    #     max_length: int = 3
-    # ):
-    #     from apyori import apriori
-    #     print("Running apriori algorithm...")
-        
-    #     # Modify data to fit apriori algorithm
-    #     attrCount = len(self.data.count()) - 1
-    #     apriori_data = self.data.astype(str).values[:, :attrCount].tolist()
-
-    #     res = list(
-    #         apriori(
-    #             apriori_data, 
-    #             min_support=min_support, 
-    #             min_confidence=min_confidence, 
-    #             min_lift=min_lift, 
-    #             max_length = max_length
-    #         )
-    #     )
-        
-    #     apr_data = {
-    #         'Rule' : [],
-    #         'Support' : [],
-    #         'Confidence' : [],
-    #         'Lift' :  []
-    #     }
-        
-    #     for item in res:
-    #         pair = item[0] 
-    #         items = [x for x in pair]
-    #         rule = ""
-    #         for i in items:
-    #             rule += str(i)+", "
-    #         rule = rule[:-2]
-
-    #         support = item.support
-    #         confidence = item[2][0].confidence
-    #         lift = item[2][0].lift
-                
-    #         apr_data['Rule'].append(rule)
-    #         apr_data['Support'].append(support)
-    #         apr_data['Confidence'].append(confidence)
-    #         apr_data['Lift'].append(lift)
-                
-    #     pd.DataFrame(apr_data).to_csv('data/result_apriori.csv')
-        
-    #     print("Apriori algorithm finished.")
-    
-    # # ECLAT - https://hands-on.cloud/implementation-of-eclat-algorithm-using-python/
-    # def eclat(
-    #     self, 
-    #     min_support: float = 0.08,
-    #     min_combination: float = 1,
-    #     max_combination: float = 3,
-    # ):
-    #     from pyECLAT import ECLAT
-        
-    #     print("Running eclat algorithm...")
-    #     eclat_instance = None
-                
-    #     attrCount = len(self.data.count())
-    #     i = 0
-    #     for col in self.data.columns[:attrCount].tolist():
-    #         self.data.rename(columns={col : i}, inplace=True)
-    #         i += 1
-        
-    #     eclat_instance = ECLAT(self.data, verbose=True)
-        
-    #     # Eclat result
-    #     eclat_instance.df_bin.to_csv('data/result_eclat.csv')
-        
-    #     # Item count
-    #     items_total = eclat_instance.df_bin.astype(int).sum(axis=0)
-    #     items_total.to_csv('data/result_eclat_item_count.csv')
-        
-    #     #  Top 10 most common items     
-    #     df = pd.DataFrame({'Items': items_total.index, 'Measurement': items_total.values}) 
-    #     df_table = df.sort_values("Measurement", ascending=False)
-    #     df_table.head(10).to_csv('data/result_eclat_top10.csv')
-        
-    #     rule_indexes, rule_supports = eclat_instance.fit(min_support=min_support,
-    #                                                     min_combination=min_combination,
-    #                                                     max_combination=max_combination,
-    #                                                     separator=' & ',
-    #                                                     verbose=True)
-    #     # Rule indices
-    #     indexes = pd.DataFrame(rule_indexes.items(), columns=['Item', 'Indices'])
-    #     indexes.to_csv('data/result_eclat_indexes.csv',sep='\t')
-    #     # Rule support
-    #     supports = pd.DataFrame(rule_supports.items(),columns=['Item', 'Support'])
-    #     supports = supports.sort_values(by=['Support'], ascending=False)
-    #     supports.to_csv('data/result_eclat_support.csv')
+    def niaarm_3(self):
+        pass

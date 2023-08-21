@@ -40,7 +40,7 @@ class data_service:
         # with open('data/data.json', 'w') as f:
         #     json.dump(data, f)
         elapsed_time = time.time() - start_time
-        print(f'Time elapsed for aquiring data: {elapsed_time}s')
+        print(f'Time elapsed for aquiring data: {elapsed_time}s\n')
         return data
     
     
@@ -103,9 +103,9 @@ class data_service:
             return None
     
     
-    # 3. - Calibrate temperature for housing -3 C
+    # 3. - Calibrate temperature for housing -6 C
     def calibrate_temperature(self):
-        self.data['t'] = self.data['t'].sub(3)    
+        self.data['t'] = self.data['t'].sub(6)    
         
     # 4. - Clean data - option 1 & 2
     def clean_data_zero(self):
@@ -132,14 +132,14 @@ class data_service:
     # 6. - Save data to file
     def save_clean_data_to_CSV(self):
         self.data.to_csv('data/cleaned-data.csv', index=False)
-        print("[OK] - Data saved to data/cleaned-data.csv")
+        print("[OK] - Data saved to data/cleaned-data.csv\n")
          
     # 7. - Update algorithms data
     def update_algorithms_data(self):
         self.algorithms.data = self.data
         
     #8. - Categorize data
-    def categorize_data(self):       
+    def classify_data(self):       
         self.data['pm1'] = pd.cut(
                 self.data['pm1'],
                 include_lowest=True,
