@@ -19,8 +19,8 @@ if __name__ == '__main__':
     # confidence : (št vrstic z A in B)/(št vrstic A)
     # lift : (Confidence(A->B))/(support(B))
     
-    ds.algorithms.apriori_new(min_support=0.5, min_lift=1)
+    ds.algorithms.apriori(min_support=0.5, min_lift=1)
     
-    ds.algorithms.eclat_new(min_support=0.5, min_combination=1, max_combination=11, min_lift=1)
+    ds.algorithms.eclat(min_support=0.5, min_combination=1, max_combination=11, min_lift=1)
     
     ds.algorithms.fp_growth(min_support=0.5, min_lift=1)

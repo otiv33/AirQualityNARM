@@ -18,7 +18,7 @@ class algorithms:
         return encoded_transactions_df
        
     # https://www.geeksforgeeks.org/implementing-apriori-algorithm-in-python/
-    def apriori_new(
+    def apriori(
         self,
         min_support:float,
         min_lift:float,
@@ -31,16 +31,23 @@ class algorithms:
         # Run apriori   
         frequent_itemset = apriori(encoded_data, min_support = min_support, use_colnames = True)
         frequent_itemset = frequent_itemset.sort_values(by=['support'], ascending=False)
-        frequent_itemset.to_csv('data/result_apriori_new_frequent_itemset.csv')
+        frequent_itemset.to_csv('data/result_apriori_frequent_itemset.csv')
     
-        # Get association rules
-        rules = association_rules(frequent_itemset, metric ="lift", min_threshold = min_lift)
-        rules = rules.sort_values(['confidence', 'lift'], ascending =[False, False])
-        rules.to_csv('data/result_apriori_new_association_rules.csv')
+        # Get association rules 
+        arules = association_rules(frequent_itemset, metric ="lift", min_threshold = min_lift)
+        arules = arules.sort_values(['confidence', 'lift'], ascending =[False, False])
+        arules.to_csv('data/result_apriori_association_rules.csv')
+        
+        # # https://analyticsindiamag.com/how-to-visualize-different-ml-models-using-pycaret-for-optimization/
+        # from pycaret.classification import plot_model, setup
+        # s = setup(self.data, transaction_id = 'pm1', item_id = 'pm25')
+        # plot_model(arules, plot = '2d')
+        # print("hol up")
         
         print('Apriori new algorithm finished.\n')    
     
-    def eclat_new(
+    # pyECLAT and mlextend association rules fix https://github.com/rasbt/mlxtend/discussions/959
+    def eclat(
         self,
         min_support: float = 0.08,
         min_combination: float = 1,
@@ -64,7 +71,12 @@ class algorithms:
                                                            max_combination=max_combination,
                                                            separator=' & ',
                                                            verbose=False)
-
+        
+        # Item count
+        items_total = eclat_instance.df_bin.astype(int).sum(axis=0)
+        items_total.to_csv('data/result_eclat_item_count.csv')
+        
+        # Encode for use in association rules
         frequent_itemset = pd.DataFrame(get_ECLAT_supports.items(),columns=['itemsets','support'])
         frequent_itemset = frequent_itemset[['support','itemsets']]
         new_column = []
@@ -75,17 +87,16 @@ class algorithms:
         frequent_itemset['itemsets'] = pd.Series(new_column)
         
         frequent_itemset = frequent_itemset.sort_values(by=['support'], ascending=False)
-        frequent_itemset.to_csv('data/result_eclat_new_frequent_itemsets.csv')
+        frequent_itemset.to_csv('data/result_eclat_frequent_itemsets.csv')
 
         # Get association rules
-        rules = association_rules(frequent_itemset, metric ="lift", min_threshold = min_lift)
-        rules = rules.sort_values(['confidence', 'lift'], ascending =[False, False])
-        rules.to_csv('data/result_eclat_new_association_rules.csv')
+        arules = association_rules(frequent_itemset, metric ="lift", min_threshold = min_lift)
+        arules = arules.sort_values(['confidence', 'lift'], ascending =[False, False])
+        arules.to_csv('data/result_eclat_association_rules.csv')
         
         print('Eclat new algorithm finished.\n')    
-        
            
-    # copied from https://towardsdatascience.com/the-fp-growth-algorithm-1ffa20e839b8
+    # https://towardsdatascience.com/the-fp-growth-algorithm-1ffa20e839b8
     def fp_growth(
         self, 
         min_support: float = 0.08,
@@ -102,9 +113,9 @@ class algorithms:
         frequent_itemset.to_csv('data/result_fp_growth_frequent_itemset.csv')
 
         # Get asspciation rules
-        rules = association_rules(frequent_itemset, metric="lift", min_threshold=min_lift)
-        rules = rules.sort_values(['confidence', 'lift'], ascending =[False, False])
-        rules.to_csv('data/result_fp_growth_association_rules.csv')
+        arules = association_rules(frequent_itemset, metric="lift", min_threshold=min_lift)
+        arules = arules.sort_values(['confidence', 'lift'], ascending =[False, False])
+        arules.to_csv('data/result_fp_growth_association_rules.csv')
 
         print("Fp-growth algorithm finished.\n")
     
