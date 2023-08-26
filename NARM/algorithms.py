@@ -40,6 +40,67 @@ class algorithms:
     
     # pyECLAT and mlextend association rules fix https://github.com/rasbt/mlxtend/discussions/959
     def eclat_supports_to_df(self, get_ECLAT_supports):
+       
+    # https://www.geeksforgeeks.org/implementing-apriori-algorithm-in-python/
+    def apriori(
+        self,
+        min_support:float,
+        min_lift:float,
+    ):
+        print("\nRunning apriori algorithm...")
+        
+        # Encode data
+        encoded_data = self.get_mlx_encoded_data()
+        
+        # Run apriori   
+        frequent_itemset = apriori(encoded_data, min_support = min_support, use_colnames = True)
+        frequent_itemset = frequent_itemset.sort_values(by=['support'], ascending=False)
+        frequent_itemset.to_csv('data/result_apriori_frequent_itemset.csv')
+    
+        # Get association rules 
+        arules = association_rules(frequent_itemset, metric ="lift", min_threshold = min_lift)
+        arules = arules.sort_values(['confidence', 'lift'], ascending =[False, False])
+        arules.to_csv('data/result_apriori_association_rules.csv')
+        
+        # # https://analyticsindiamag.com/how-to-visualize-different-ml-models-using-pycaret-for-optimization/
+        # from pycaret.classification import plot_model, setup
+        # s = setup(self.data, transaction_id = 'pm1', item_id = 'pm25')
+        # plot_model(arules, plot = '2d')
+        # print("hol up")
+        
+        print('Apriori new algorithm finished.\n')    
+    
+    # pyECLAT and mlextend association rules fix https://github.com/rasbt/mlxtend/discussions/959
+    def eclat(
+        self,
+        min_support: float = 0.08,
+        min_combination: float = 1,
+        max_combination: float = 3,
+        min_lift:float = 1
+    ):       
+        print("Running eclat algorithm...")
+        eclat_instance = None
+         
+        # Encode data       
+        attrCount = len(self.data.count())
+        i = 0
+        for col in self.data.columns[:attrCount].tolist():
+            self.data.rename(columns={col : i}, inplace=True)
+            i += 1
+        
+        # Run eclat
+        eclat_instance = ECLAT(self.data, verbose=False)
+        get_ECLAT_indexes, get_ECLAT_supports = eclat_instance.fit(min_support=min_support,
+                                                           min_combination=min_combination,
+                                                           max_combination=max_combination,
+                                                           separator=' & ',
+                                                           verbose=False)
+        
+        # Item count
+        items_total = eclat_instance.df_bin.astype(int).sum(axis=0)
+        items_total.to_csv('data/result_eclat_item_count.csv')
+        
+        # Encode for use in association rules
         frequent_itemset = pd.DataFrame(get_ECLAT_supports.items(),columns=['itemsets','support'])
         frequent_itemset = frequent_itemset[['support','itemsets']]
         new_column = []
