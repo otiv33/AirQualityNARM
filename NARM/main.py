@@ -12,8 +12,8 @@ if __name__ == '__main__':
     clean_data = 'zero' # zero, median
     min_support = 0.9 # default 0.9
     min_lift = 1 # default 1
-    show_plots = True
-    categorized_alg = False
+    show_plots = False
+    categorized_alg = True
     save_results = True
     
     ds = data_service(load_fresh_data)
@@ -51,12 +51,12 @@ if __name__ == '__main__':
             print_mem_usage(mem_usage, 'apriori')
         
         # ECLAT
-        if False:
+        if True:
             mem_usage = memory_usage((ds.algorithms.eclat, (), eclat_params))
             print_mem_usage(mem_usage, 'eclat')
         
         # FP-growth
-        if False:
+        if True:
             mem_usage = memory_usage((ds.algorithms.fp_growth, (), aprirori_and_fp_params))
             print_mem_usage(mem_usage, 'fp_growth')
     else:
