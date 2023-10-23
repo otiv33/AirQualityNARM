@@ -61,6 +61,7 @@ def parallel_category_plot_nia(arules):
             labels={'antecedents':'Antecedents', 'consequents':'Consequents'},
             height=1080,
             width=1920,
+            title='Paralelni kategoprični graf A⇒B'
         )
     
     fig.update_layout(
@@ -93,10 +94,10 @@ def heatmap_plot(arules):
     
 def heatmap_plot_nia(arules):
     import seaborn as sns
-    rules = arules.copy(deep=True)
+    import pandas as pd
 
     # Transform antecedent, consequent, and support columns into matrix
-    support_table = rules.pivot(index='consequent', columns='antecedent', values='support')
+    support_table = pd.DataFrame(arules).pivot_table(index='consequent', columns='antecedent', values='support')
 
     plt.figure(figsize=(10,6))
     sns.heatmap(support_table, annot=True, cbar=True)
@@ -105,6 +106,7 @@ def heatmap_plot_nia(arules):
     t -= 0.5 
     plt.ylim(b, t) 
     plt.yticks(rotation=0)
+    plt.title('Graf toplotnega zemljevida', fontsize = 20)
     plt.show()
 
     
@@ -118,6 +120,7 @@ def scatterplot(rules):
     sns.scatterplot(x = "support", y = "confidence", 
                     size = "lift", data = rules)
     plt.margins(0.01,0.01)
+    plt.title('Graf raztrosa asociacijskih pravil', fontsize = 20)
     plt.show()
     
 
@@ -141,8 +144,8 @@ def parallel_rule_existence_plot_nia(arules):
     from pandas.plotting import parallel_coordinates
     rules = arules.copy(deep=True)
     # Convert rules into coordinates suitable for use in a parallel coordinates plot
-    rules['antecedent'] = rules['antecedents'].apply(lambda antecedent: list(antecedent)[0])
-    rules['consequent'] = rules['consequents'].apply(lambda consequent: list(consequent)[0])
+    rules['antecedent'] = rules['antecedent'].apply(lambda antecedent: list(antecedent)[0])
+    rules['consequent'] = rules['consequent'].apply(lambda consequent: list(consequent)[0])
     rules['rule'] = rules.index
     coords = rules[['antecedent','consequent','rule']]
 

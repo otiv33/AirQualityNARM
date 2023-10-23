@@ -12,8 +12,8 @@ if __name__ == '__main__':
     clean_data = 'zero' # zero, median
     min_support = 0.9 # default 0.9
     min_lift = 1 # default 1
-    show_plots = False
-    categorized_alg = True
+    show_plots = True
+    categorized_alg = False
     save_results = True
     
     ds = data_service(load_fresh_data)
@@ -60,7 +60,8 @@ if __name__ == '__main__':
             mem_usage = memory_usage((ds.algorithms.fp_growth, (), aprirori_and_fp_params))
             print_mem_usage(mem_usage, 'fp_growth')
     else:
-        ds.algorithms.niaarm_1(min_support=min_support, min_lift=min_lift)
+        ds.algorithms.particle_swarm_optimization(min_support=min_support, min_lift=min_lift)
+        
         # niaarm_params = {
         #     "min_support":min_support,
         #     "min_lift":min_lift

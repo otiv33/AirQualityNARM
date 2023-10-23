@@ -1,0 +1,91 @@
+,Item,Support
+22,benzen-Dobro & pm25-Zelo dobra,1.0
+2,benzen-Dobro,1.0
+25,benzen-Dobro & nox-Zelo nizka,1.0
+5,pm25-Zelo dobra,1.0
+36,pm25-Zelo dobra & nox-Zelo nizka,1.0
+8,nox-Zelo nizka,1.0
+74,benzen-Dobro & pm25-Zelo dobra & nox-Zelo nizka,1.0
+85,no2-Zelo dobra & pm25-Zelo dobra & nox-Zelo nizka,0.9909985935302391
+30,no2-Zelo dobra & pm25-Zelo dobra,0.9909985935302391
+33,no2-Zelo dobra & nox-Zelo nizka,0.9909985935302391
+21,benzen-Dobro & no2-Zelo dobra,0.9909985935302391
+68,benzen-Dobro & no2-Zelo dobra & pm25-Zelo dobra,0.9909985935302391
+71,benzen-Dobro & no2-Zelo dobra & nox-Zelo nizka,0.9909985935302391
+4,no2-Zelo dobra,0.9909985935302391
+65,benzen-Dobro & pm4-Zelo dobra & pm25-Zelo dobra,0.9627566807313642
+81,pm4-Zelo dobra & pm25-Zelo dobra & nox-Zelo nizka,0.9627566807313642
+29,pm4-Zelo dobra & nox-Zelo nizka,0.9627566807313642
+27,pm4-Zelo dobra & pm25-Zelo dobra,0.9627566807313642
+3,pm4-Zelo dobra,0.9627566807313642
+20,benzen-Dobro & pm4-Zelo dobra,0.9627566807313642
+67,benzen-Dobro & pm4-Zelo dobra & nox-Zelo nizka,0.9627566807313642
+26,pm4-Zelo dobra & no2-Zelo dobra,0.9574683544303797
+79,pm4-Zelo dobra & no2-Zelo dobra & nox-Zelo nizka,0.9574683544303797
+64,benzen-Dobro & pm4-Zelo dobra & no2-Zelo dobra,0.9574683544303797
+77,pm4-Zelo dobra & no2-Zelo dobra & pm25-Zelo dobra,0.9574683544303797
+62,pm10-Zelo dobra & pm25-Zelo dobra & nox-Zelo nizka,0.8754992967651195
+1,pm10-Zelo dobra,0.8754992967651195
+51,pm10-Zelo dobra & benzen-Dobro & pm25-Zelo dobra,0.8754992967651195
+53,pm10-Zelo dobra & benzen-Dobro & nox-Zelo nizka,0.8754992967651195
+14,pm10-Zelo dobra & benzen-Dobro,0.8754992967651195
+17,pm10-Zelo dobra & pm25-Zelo dobra,0.8754992967651195
+19,pm10-Zelo dobra & nox-Zelo nizka,0.8754992967651195
+58,pm10-Zelo dobra & no2-Zelo dobra & pm25-Zelo dobra,0.8736427566807313
+16,pm10-Zelo dobra & no2-Zelo dobra,0.8736427566807313
+60,pm10-Zelo dobra & no2-Zelo dobra & nox-Zelo nizka,0.8736427566807313
+50,pm10-Zelo dobra & benzen-Dobro & no2-Zelo dobra,0.8736427566807313
+15,pm10-Zelo dobra & pm4-Zelo dobra,0.8709423347398031
+57,pm10-Zelo dobra & pm4-Zelo dobra & nox-Zelo nizka,0.8709423347398031
+55,pm10-Zelo dobra & pm4-Zelo dobra & pm25-Zelo dobra,0.8709423347398031
+49,pm10-Zelo dobra & benzen-Dobro & pm4-Zelo dobra,0.8709423347398031
+54,pm10-Zelo dobra & pm4-Zelo dobra & no2-Zelo dobra,0.8690857946554149
+66,benzen-Dobro & pm4-Zelo dobra & pm1-Zelo dobra,0.8513080168776371
+72,benzen-Dobro & pm25-Zelo dobra & pm1-Zelo dobra,0.8513080168776371
+37,pm1-Zelo dobra & nox-Zelo nizka,0.8513080168776371
+75,benzen-Dobro & pm1-Zelo dobra & nox-Zelo nizka,0.8513080168776371
+80,pm4-Zelo dobra & pm25-Zelo dobra & pm1-Zelo dobra,0.8513080168776371
+82,pm4-Zelo dobra & pm1-Zelo dobra & nox-Zelo nizka,0.8513080168776371
+6,pm1-Zelo dobra,0.8513080168776371
+88,pm25-Zelo dobra & pm1-Zelo dobra & nox-Zelo nizka,0.8513080168776371
+28,pm4-Zelo dobra & pm1-Zelo dobra,0.8513080168776371
+34,pm25-Zelo dobra & pm1-Zelo dobra,0.8513080168776371
+23,benzen-Dobro & pm1-Zelo dobra,0.8513080168776371
+31,no2-Zelo dobra & pm1-Zelo dobra,0.8485513361462729
+83,no2-Zelo dobra & pm25-Zelo dobra & pm1-Zelo dobra,0.8485513361462729
+78,pm4-Zelo dobra & no2-Zelo dobra & pm1-Zelo dobra,0.8485513361462729
+86,no2-Zelo dobra & pm1-Zelo dobra & nox-Zelo nizka,0.8485513361462729
+69,benzen-Dobro & no2-Zelo dobra & pm1-Zelo dobra,0.8485513361462729
+52,pm10-Zelo dobra & benzen-Dobro & pm1-Zelo dobra,0.8032630098452883
+56,pm10-Zelo dobra & pm4-Zelo dobra & pm1-Zelo dobra,0.8032630098452883
+18,pm10-Zelo dobra & pm1-Zelo dobra,0.8032630098452883
+63,pm10-Zelo dobra & pm1-Zelo dobra & nox-Zelo nizka,0.8032630098452883
+61,pm10-Zelo dobra & pm25-Zelo dobra & pm1-Zelo dobra,0.8032630098452883
+59,pm10-Zelo dobra & no2-Zelo dobra & pm1-Zelo dobra,0.8016315049226441
+13,h-Nizka & nox-Zelo nizka,0.5627566807313643
+12,h-Nizka & pm25-Zelo dobra,0.5627566807313643
+41,h-Nizka & benzen-Dobro & pm25-Zelo dobra,0.5627566807313643
+42,h-Nizka & benzen-Dobro & nox-Zelo nizka,0.5627566807313643
+9,h-Nizka & benzen-Dobro,0.5627566807313643
+48,h-Nizka & pm25-Zelo dobra & nox-Zelo nizka,0.5627566807313643
+0,h-Nizka,0.5627566807313643
+46,h-Nizka & no2-Zelo dobra & pm25-Zelo dobra,0.5568495077355837
+40,h-Nizka & benzen-Dobro & no2-Zelo dobra,0.5568495077355837
+11,h-Nizka & no2-Zelo dobra,0.5568495077355837
+47,h-Nizka & no2-Zelo dobra & nox-Zelo nizka,0.5568495077355837
+45,h-Nizka & pm4-Zelo dobra & nox-Zelo nizka,0.5481293952180029
+44,h-Nizka & pm4-Zelo dobra & pm25-Zelo dobra,0.5481293952180029
+39,h-Nizka & benzen-Dobro & pm4-Zelo dobra,0.5481293952180029
+10,h-Nizka & pm4-Zelo dobra,0.5481293952180029
+43,h-Nizka & pm4-Zelo dobra & no2-Zelo dobra,0.5440225035161744
+73,benzen-Dobro & pm25-Zelo dobra & o3-Dobra,0.5078481012658228
+76,benzen-Dobro & o3-Dobra & nox-Zelo nizka,0.5078481012658228
+38,o3-Dobra & nox-Zelo nizka,0.5078481012658228
+35,pm25-Zelo dobra & o3-Dobra,0.5078481012658228
+24,benzen-Dobro & o3-Dobra,0.5078481012658228
+7,o3-Dobra,0.5078481012658228
+89,pm25-Zelo dobra & o3-Dobra & nox-Zelo nizka,0.5078481012658228
+70,benzen-Dobro & no2-Zelo dobra & o3-Dobra,0.5062728551336146
+32,no2-Zelo dobra & o3-Dobra,0.5062728551336146
+84,no2-Zelo dobra & pm25-Zelo dobra & o3-Dobra,0.5062728551336146
+87,no2-Zelo dobra & o3-Dobra & nox-Zelo nizka,0.5062728551336146

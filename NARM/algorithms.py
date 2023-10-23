@@ -9,7 +9,7 @@ from visualization import items_total_plot, parallel_category_plot, heatmap_plot
     heatmap_plot_nia, parallel_rule_existence_plot_nia
 
 from niaarm import Dataset, get_rules
-from niapy.algorithms.basic import DifferentialEvolution, BatAlgorithm, BeesAlgorithm
+from niapy.algorithms.basic import ParticleSwarmAlgorithm
 from niaarm.visualize import hill_slopes
 
 class algorithms:
@@ -95,8 +95,8 @@ class algorithms:
         if show_plots:
             # frequent_itemset_plot(frequent_itemset)
             # items_total_plot(encoded_data)
-            parallel_category_plot(arules)
-            # heatmap_plot(arules)
+            # parallel_category_plot(arules)
+            heatmap_plot(arules)
             # scatterplot(arules)
             # parallel_rule_existence_plot(arules)
         print("Done")
@@ -211,7 +211,7 @@ class algorithms:
             rules.remove(r)
         return rules
     
-    def niaarm_1(
+    def particle_swarm_optimization(
         self,
         min_support: float = 0.5,
         min_lift: float = 1
@@ -220,38 +220,39 @@ class algorithms:
         dataset = Dataset(self.data)
         
         # Set algorithm and metrics
-        # algorithm = DifferentialEvolution(population_size=50, differential_weight=0.5, crossover_probability=0.9)
-        algorithm = BatAlgorithm()
-        metrics = ('support', 'confidence')
+        algorithm = ParticleSwarmAlgorithm(population_size=25, c1=2.0, c2=2.0, w=0.7, min_velocity=-1.5, max_velocity=1.5)
         
         # Get association rules
-        rules, run_time = get_rules(dataset, algorithm, metrics, max_iters=30, logging=True)
-        print(f'Run Time: {run_time}')
+        metrics = ('support', 'confidence')
+        rules, run_time = get_rules(dataset, algorithm, metrics, max_iters=50, logging=True)
         
         # Filter rules with min_support and min_lift
         rules = self.filter_min_threshold(rules, min_support, min_lift)
         
+        print(f'Run Time: {run_time}')
         rules.sort(by='support',reverse=True)
         
         rules.to_csv('data/result_niaarm1_association_rules.csv')
         
-        arules = pd.read_csv('data/result_niaarm1_association_rules.csv')
-        
-        import re
-        arules['antecedent'] = arules['antecedent'].apply(lambda a: re.sub(r'[.][0-9]+', '', a))
-        arules['consequent'] = arules['consequent'].apply(lambda a: re.sub(r'[.][0-9]+', '', a))
-
-        
-        # Show plots
-        if True:
-            # items_total_plot(encoded_data)
-            parallel_category_plot_nia(arules)
-            heatmap_plot_nia(arules)
-            scatterplot(arules)
-            parallel_rule_existence_plot_nia(arules)
+        # from matplotlib import pyplot as plt
         # first_rule = rules[0]
         # hill_slopes(first_rule, dataset.transactions)
         # plt.show()
+        
+        arules = pd.read_csv('data/result_niaarm1_association_rules.csv')
+
+        # Remove decimals
+        import re
+        arules['antecedent'] = arules['antecedent'].apply(lambda a: re.sub(r'\.\d*(\d{2})', r'.\1', a))
+        arules['consequent'] = arules['consequent'].apply(lambda a: re.sub(r'\.\d*(\d{2})', r'.\1', a))
+
+        # Show plots
+        if True:
+            parallel_category_plot_nia(arules)
+            heatmap_plot_nia(arules)
+            scatterplot(arules)
+            print("Done")
+
     
     def niaarm_2(self):
         pass

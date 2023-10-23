@@ -61,7 +61,7 @@ class data_service:
                 't': float(d['t']),
                 'voc': float(d['voc']),
                 'nox': float(d['nox']),
-                'dateTime': datetime.strptime(d['dateTime'], "%Y-%m-%d %H:%M:%S"),
+                'dateTime': datetime.strptime(d['dateTime'], "%Y-%m-%d %H:%M:%S").hour,
                 # From arso
                 'o3': None,
                 'no2': None,
@@ -206,11 +206,11 @@ class data_service:
             bins=[0,5,380],
             labels= ['benzen-Dobro','benzen-Slabo']
         )
-        hours = self.data['dateTime'].dt.hour
         self.data['dateTime'] = pd.cut(
-            hours,
+            self.data['dateTime'],
             include_lowest=True,
             bins=[0,6,12,18,24],
             labels= ['dateTime-Noč', 'dateTime-Dopoldne','dateTime-Popoldne','dateTime-Večer']
         )
     
+
