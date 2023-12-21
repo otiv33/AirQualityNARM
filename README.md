@@ -2,7 +2,7 @@
 
 This repository is all the code that was used for the bachelor thesis <b>Finding hidden information from air quality measurement using association rule mining</b>.
 
-Thesis link : [Bachelor thesis](https://github.com/otiv33/AirQualityNARM/blob/master/Bachelor-thesis-abeln.pdf)
+Thesis link : [Bachelor thesis](https://dk.um.si/IzpisGradiva.php?id=85965&lang=slv)
 
 ## Abstract
 
